@@ -1,0 +1,90 @@
+---
+title: "2nd Day ML"
+author: "Priyanka Mohekar"
+date: "30 April 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+```
+
+
+```{r}
+data("iris")
+View(iris)
+iris_new <- iris %>% select(-Species)
+View(iris_new)
+iris_model <- kmeans(iris_new, centers = 3)
+iris_model
+iris_model$cluster
+length(iris_model$cluster)
+dim(iris_new)
+table(iris_model$cluster)
+iris_model
+```
+
+
+```{r}
+set.seed(100)
+adv <- read.csv("Advertising.csv")
+View(adv)
+adv[1:150,]
+adv_train<-adv[sample(seq(1,nrow(adv)),162),]
+View(adv_train)
+adv_test <- adv[sample(seq(1,nrow(adv)),38),]
+names(adv)
+adv_model <- lm(sales ~TV, data = adv_train) 
+adv_model
+```
+
+
+```{r}
+m = 0.01
+m = 0.02
+m = 0.03
+m = 0.04
+m = 0.05
+m = 0.1
+c = 1
+sales_predicted <- m * adv_train$TV +c
+error <- sum((adv_train$sales - sales_predicted)^2)/nrow(adv_train)
+error
+{{plot(adv_train$TV, adv_train$sales)
+  lines(adv_train$TV, sales_predicted)}}
+
+```
+
+
+```{r,fig.height=5,fig.width=8}
+m = seq(0,1,length.out = 4)
+m
+length(m)
+par(mfrow = c(2,2))
+for(i in m){
+  sales_predicted <- i * adv_train$TV +c
+  error <- sum((adv_train$sales - sales_predicted)^2)/nrow(adv_train)
+  print(error)
+  {{plot(adv_train$TV, adv_train$sales)
+  lines(adv_train$TV, sales_predicted)}}
+}
+```
+
+
+```{r}
+m = seq(-1,1,length.out = 100)
+m
+length(m)
+e = c()
+for(i in m){
+  sales_predicted <- i * adv_train$TV +c
+  error <- sum((adv_train$sales - sales_predicted)^2)/nrow(adv_train)
+  nrow(adv_train)
+  e = c(e,error)
+}
+plot(e)
+min(e)
+```
