@@ -1,0 +1,133 @@
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+library(ISLR)
+library(ggplot2)
+library(tree)
+library(dplyr)
+setwd("C:/Users/Administrator/Desktop/Machine Learning")
+adv <- read.csv("Advertising.csv")
+View(adv)
+
+```
+
+# Regression model
+```{r}
+adv[1:150,]
+adv_train<-adv[1:150,]
+View(adv)
+adv_test <- adv[151:200,]
+names(adv)
+
+#Calculating missing value %
+View(is.na(adv))
+colSums(is.na(adv))
+colSums(is.na(adv))/nrow(adv) *100
+
+#Viz the outliers
+boxplot(adv$TV)
+boxplot(adv$radio)
+boxplot(adv$newspaper)
+boxplot(adv$sales)
+
+
+ggplot(adv,aes(x = TV, y = radio)) + geom_point()
+
+# Method 1 of splitting data
+
+adv_train <- adv[1:162,]
+
+adv_test <- adv[163:200,]
+
+# Method 2 of splitting data 
+
+sample(c(1,2,3,4,5,6),5)
+sample(seq(1,200),162)
+sample(seq(1,nrow(adv)),162)
+adv_training <- adv[sample(seq(1,nrow(adv)),162),]
+adv_testing <- adv[sample(seq(1,nrow(adv)),38),]
+names(adv_train)
+names(adv_test)
+dim(adv_train)
+dim(adv_test)
+
+#Fit a model
+
+adv_model = lm(sales~TV+radio+newspaper, data = adv_train)
+adv_model
+summary(adv_model)
+
+#Predict sales for testing data set
+
+predict(adv_model)
+names(adv_test)
+
+#Predict sales for testing data set
+
+predict(adv_model,adv_test[,2:4])
+
+#Predict sales for testing data set
+
+adv_test$sales_pred <- predict(adv_model,adv_test[,2:4])
+View(adv_test)
+min
+min(adv_test$sales)
+max(adv_test$sales)
+max(adv_test$sales_pred)
+min(adv_test$sales_pred)
+
+# Calculating error row wise
+
+adv_test$error <- adv_test$sales - adv_test$sales_pred
+
+View(adv_test)
+
+# Calculating squared error
+
+adv_test$sqr_error <- adv_test$error^2
+View(adv_test$sqr_error)
+View(adv_test)
+sum(adv_test$sqr_error)
+
+{{plot(adv_test$sales, type = "l")
+lines(adv_test$sales_pred, col = "red")}}
+```
+
+
+## Classification model
+```{r}
+bank <- read.csv("bank.csv", sep = ";")
+View(bank)
+
+# splitting data
+
+bank_train <- bank[sample(seq(1,nrow(bank)),3616),]
+bank_test <- bank[sample(seq(1,nrow(bank)),4521-3616),]
+
+#Fit a model
+
+bank_model <- tree(y~. , data = bank_train)
+bank_model
+{{plot(bank_model)
+  text(bank_model)}}
+
+#Predict probs for testing data set
+
+table(bank$y)
+
+probs <- predict(bank_model, bank_test %>% select(-y))
+
+probs <- as.data.frame(probs)
+
+probs$predict = if_else(probs$no > probs$yes, "no", "yes")
+
+bank_test$predicted <- probs$predict
+View(bank_test)
+
+# Calculating % if accuracy of model
+
+View(bank_test$y == bank_test$predicted)
+sum(bank_test$y == bank_test$predicted)
+nrow(bank_test)
+
+sum(bank_test$y == bank_test$predicted) / nrow(bank_test) * 100
+```
